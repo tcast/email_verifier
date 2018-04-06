@@ -1,8 +1,13 @@
 # EmailVerifier
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/email_verifier`. To experiment with that code, run `bin/console` for an interactive prompt.
+Helper utility to validate if a given email address is real.
 
-TODO: Delete this and the text above, and describe your gem
+This gem does a complete validation for an email - from checking email format to actually connecting with a given mail server and asking if the email in question is real.
+
+It uses telnet protocol to perform the validation. Telnet was used as it gives the power to try connections with smtp server on different ports rather than just 25. This gem considers port - 25, 587, 465, 2525 into consideration while trying connections.
+
+Most of the email servers black list the ip if one continously bombards the email server with requests. Going further, you would not be able to validate the email, until and unless you get you ip removed from the blacklist. This gem has provision for using proxies hiding you server's identity behind it.
+
 
 ## Installation
 
@@ -22,7 +27,31 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+To get info about realness of given email address, email_verifier connects with a mail server that email's domain points to and pretends to send an email. Some smtp servers will not allow you to do this if you will not present yourself as a real user.
+
+First thing you need to set up is placing something like this either in initializer or in application.rb file:
+
+```
+EmailVerifier.config do |config|
+  config.verifier_email = "realname@realdomain.com"
+end
+```
+
+Then, one can use it like this - 
+
+```
+EmailVerifier.check!(email_to_be_tested)
+```
+
+This method returns true, if the email is correct, otherwise it raises an exception defining what went wrong while validating the email.
+
+One can hide the server's ip by using proxy like this -
+
+```
+EmailVerifier.check!(email_to_be_tested, {'Host': '80.211.x.xxx', 'Port': 8080})
+```
+
+This would seemlessly validate the email using the provided proxy server.
 
 ## Development
 
@@ -37,7 +66,3 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/your-u
 ## License
 
 The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the EmailVerifier project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/your-username/email_verifier/blob/master/CODE_OF_CONDUCT.md).
